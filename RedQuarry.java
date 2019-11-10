@@ -17,7 +17,7 @@ public class RedQuarry extends AutoMasterClass{
             pause(.1);
             strafe(.3,0,"right",8);
             pause(.1);
-            strafe(.3,0,"right", inchOff);
+            strafe(.3,0,"left", inchOff);
             closeClaw();
             move(0, -.3, 2);
             pause(.1);

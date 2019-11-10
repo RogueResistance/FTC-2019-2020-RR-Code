@@ -16,12 +16,11 @@ public abstract class AutoMasterClass extends LinearOpMode {
     private ElapsedTime runtime;
     private DcMotorEx leftFront, leftBack, rightFront, rightBack, slide;
     private DcMotorEx[] motors;
-    private Servo servoright,servoleft,platformmover1,platformmover2;
+    private Servo servoRight,servoLeft,platformMover1,platformMover2;
     private BNO055IMU imu;
     private PID Pid = new PID(.022, 0.0003, 0.0022);
     private PID strafePID = new PID(.02, .0003, .002);
-    private Robot_Navigation kb = new Robot_Navigation();
-    private vuforia ab = new vuforia();
+    private Vuforia ab = new Vuforia();
     private int cameraMonitorViewId;
     private VuforiaLocalizer.Parameters parameters;
     private int position;
@@ -85,24 +84,22 @@ public abstract class AutoMasterClass extends LinearOpMode {
         }
     }
     public void initialize() {
-
-
         leftFront = hardwareMap.get(DcMotorEx.class, "leftFrontDrive");
         leftBack = hardwareMap.get(DcMotorEx.class, "leftRearDrive");
         rightFront = hardwareMap.get(DcMotorEx.class, "rightFrontDrive");
         rightBack = hardwareMap.get(DcMotorEx.class, "rightRearDrive");
         slide = hardwareMap.get(DcMotorEx.class, "lift");
-        servoright = hardwareMap.servo.get("servoright");
-        servoleft = hardwareMap.servo.get("servoleft");
-        platformmover1 = hardwareMap.servo.get("lift1");
-        platformmover2 = hardwareMap.servo.get("lift2");
+        servoRight = hardwareMap.servo.get("servoRight");
+        servoLeft = hardwareMap.servo.get("servoLeft");
+        platformMover1 = hardwareMap.servo.get("lift1");
+        platformMover2 = hardwareMap.servo.get("lift2");
 
         leftFront.setDirection(DcMotor.Direction.REVERSE);
         leftBack.setDirection(DcMotor.Direction.REVERSE);
-        platformmover1.setDirection(Servo.Direction.REVERSE);
-        platformmover2.setDirection(Servo.Direction.FORWARD);
-        servoleft.setDirection(Servo.Direction.FORWARD);
-        servoright.setDirection(Servo.Direction.REVERSE);
+        platformMover1.setDirection(Servo.Direction.REVERSE);
+        platformMover2.setDirection(Servo.Direction.FORWARD);
+        servoLeft.setDirection(Servo.Direction.FORWARD);
+        servoRight.setDirection(Servo.Direction.REVERSE);
         motors = new DcMotorEx[]{leftFront, leftBack, rightFront, rightBack, slide};
 
         imu = hardwareMap.get(BNO055IMU.class, "imu");
@@ -113,13 +110,23 @@ public abstract class AutoMasterClass extends LinearOpMode {
         runtime = new ElapsedTime();
     }
     public void gripPlatform() {
-        platformmover1.setPosition(.7);
-        platformmover2.setPosition(.7);
+        platformMover1.setPosition(.7);
+        platformMover2.setPosition(.7);
     }
 
     public void releasePlatform() {
-        platformmover1.setPosition(1);
-        platformmover2.setPosition(1);
+        platformMover1.setPosition(1);
+        platformMover2.setPosition(1);
+    }
+
+    public void closeClaw(){
+        servoLeft.setPosition(0);
+        servoRight.setPosition(0);
+    }
+
+    public void openClaw() {
+        servoLeft.setPosition(1);
+        servoRight.setPosition(1);
     }
 
     public void heartbeat() throws InterruptedException{
@@ -139,18 +146,32 @@ public abstract class AutoMasterClass extends LinearOpMode {
         ab.targetsSkyStone.activate();
         pause(0.5);
 
-        while (!ab.targetVisible && motorsBusy((int)(inches*C*STRAFE_COEFFICIENT))) {
-            heartbeat();
-            correction(.125, 0, "straferight", false);
-            if (Math.abs(baseSlidePosition - slide.getCurrentPosition()) < 300) {
-                slide.setPower(-.2);
+        if(color == ALLIANCE_COLOR.RED) {
+            while (!ab.targetVisible && motorsBusy((int) (inches * C * STRAFE_COEFFICIENT))) {
+                heartbeat();
+                correction(.125, 0, "straferight", false);
+                if (Math.abs(baseSlidePosition - slide.getCurrentPosition()) < 300) {
+                    slide.setPower(-.2);
+                } else
+                    slide.setPower(0);
+                yPosition = ab.getYPosition();
+
+
+                telemetry.update();
             }
-            else
-                slide.setPower(0);
-            yPosition = ab.getYPosition();
+        }
+        else{
+            while (!ab.targetVisible && motorsBusy((int) (inches * C * STRAFE_COEFFICIENT))) {
+                heartbeat();
+                correction(.125, 0, "strafeleft", false);
+                if (Math.abs(baseSlidePosition - slide.getCurrentPosition()) < 300) {
+                    slide.setPower(-.2);
+                } else
+                    slide.setPower(0);
+                yPosition = ab.getYPosition();
 
-
-            telemetry.update();
+                telemetry.update();
+            }
         }
         halt();
 
@@ -158,15 +179,13 @@ public abstract class AutoMasterClass extends LinearOpMode {
         while (Math.abs(current - runtime.time()) < 1) {
             yPosition = ab.getYPosition();
             telemetry.addData("yPosition", yPosition);
-
-
             telemetry.update();
         }
         ab.targetsSkyStone.deactivate();
 
-        if (color.equals(ALLIANCE_COLOR.RED)) {
+        if (color.equals(ALLIANCE_COLOR.RED))
             return determineRedPosition(motorsBusy((int)(inches*C*STRAFE_COEFFICIENT)), yPosition);
-        }
+
         return determineBluePosition(yPosition);
     }
     public void pause ( double time) throws InterruptedException {
@@ -183,6 +202,7 @@ public abstract class AutoMasterClass extends LinearOpMode {
             motor.setPower(0);
         }
     }
+
     public SKYSTONE_POSITION determineRedPosition(boolean scanned, double yPosition) {
         if (yPosition > 1)
             return SKYSTONE_POSITION.RIGHT;
@@ -200,6 +220,44 @@ public abstract class AutoMasterClass extends LinearOpMode {
         }
         return SKYSTONE_POSITION.LEFT;
     }
+
+    public double moveToBlock(ALLIANCE_COLOR color, SKYSTONE_POSITION pos){
+        switch(pos){
+            case LEFT: return color == ALLIANCE_COLOR.RED ? 8.0 : -8.0;
+            case MIDDLE: return 0;
+            case RIGHT: return color == ALLIANCE_COLOR.RED ? -8.0 : 8.0;
+            default: return 0.0;
+        }
+    }
+
+    public void turn(String direction, double power) {
+        if (direction.equals("left")) {
+            leftFront.setPower(-power);
+            leftBack.setPower(-power);
+            rightFront.setPower(power);
+            rightBack.setPower(power);
+        } else if (direction.equals("right")) {
+            leftFront.setPower(power);
+            leftBack.setPower(power);
+            rightFront.setPower(-power);
+            rightBack.setPower(-power);
+
+        }
+        telemetry.addData("Error", currentAngle());
+    }
+
+
+    public void setEncoders() {
+        leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
     public void resetMotors() {
         leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

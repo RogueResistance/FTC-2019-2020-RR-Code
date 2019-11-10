@@ -18,6 +18,7 @@ public class RedQuarry extends AutoMasterClass{
             strafe(.3,0,"right",8);
             pause(.1);
             strafe(.3,0,"right", inchOff);
+            closeClaw();
             move(0, -.3, 2);
             pause(.1);
             while (currentAngle() > -90) {
@@ -28,7 +29,6 @@ public class RedQuarry extends AutoMasterClass{
             }
             halt();
             pause(.1);
-            closeClaw();
             move(0,.3,500.0/17);
             openClaw();
         }

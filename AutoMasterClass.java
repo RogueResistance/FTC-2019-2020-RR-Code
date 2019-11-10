@@ -188,6 +188,22 @@ public abstract class AutoMasterClass extends LinearOpMode {
 
         return determineBluePosition(yPosition);
     }
+    
+    public void startStrafe(double power, int targetHeading, String direction, double inches)throws InterruptedException {
+        int x = 1;
+        for (double currPower = 0.00001; currPower <= power; x++, currPower = Math.pow(currPower, 1.0 / x)) {
+            correction(currPower, targetHeading, direction, false);
+        }
+
+    }
+
+    public void stopStrafe(double power, int targetHeading, String direction, double inches)throws InterruptedException {
+        int x = 1;
+        for(double currPower = 0.0001; currPower < power; x++,power = Math.pow(power, x)) {
+            correction(power, targetHeading, direction, false);
+        }
+    }
+    
     public void pause ( double time) throws InterruptedException {
         double pause = runtime.time();
         while (runtime.time() - pause < time) {
@@ -331,11 +347,13 @@ public abstract class AutoMasterClass extends LinearOpMode {
         telemetry.addData("power FL", leftFront.getPower());
         telemetry.update();
     }
+    
     public void strafe(double power, int targetHeading, String direction, double inches) throws InterruptedException {
-        int ticks = (int)(inches*C*STRAFE_COEFFICIENT);
-
+        int ticks = (int)((inches)*C*STRAFE_COEFFICIENT);
+        //CHANGE THE INT TICKS VALUE
         resetMotors();
         //double startingPosition = perpendicularEncoderTracker.getCurrentPosition();
+        startStrafe(power, targetHeading, direction, 0);
 
         while (motorsBusy(ticks)) {
             correction(power, targetHeading, direction, false);
@@ -344,9 +362,8 @@ public abstract class AutoMasterClass extends LinearOpMode {
             telemetry.addData("target", ticks);
             telemetry.update();
         }
+        stopStrafe(power, targetHeading, direction, 0);
         halt();
     }
-
-
 }
 

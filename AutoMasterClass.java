@@ -194,6 +194,9 @@ public abstract class AutoMasterClass extends LinearOpMode {
         for (double currPower = 0.00001; currPower <= power; x++, currPower = Math.pow(currPower, 1.0 / x)) {
             correction(currPower, targetHeading, direction, false);
         }
+//         for (double x = 1, currPower = 0.01; currPower <= power; x++, currPower = 1.0/(x-6) + (7.0/6)) {
+//             correction(currPower, targetHeading, direction, false);
+//         }
 
     }
 
@@ -202,6 +205,9 @@ public abstract class AutoMasterClass extends LinearOpMode {
         for(double currPower = 0.0001; currPower < power; x++,power = Math.pow(power, x)) {
             correction(power, targetHeading, direction, false);
         }
+//         for(double currPower = power, x = 1; currPower >= 0; x++, currPower = 0.006*Math.exp(x)) {
+//             correction(power, targetHeading, direction, false);
+//         }
     }
     
     public void pause ( double time) throws InterruptedException {

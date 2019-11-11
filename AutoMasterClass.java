@@ -371,36 +371,5 @@ public abstract class AutoMasterClass extends LinearOpMode {
         stopStrafe(power, targetHeading, direction, 0);
         halt();
     }
-    
-//     this still needs testing
-//     this will also cause the robot to travel too far because the distance traveled when speeding up and slowing down hasn't been accounted for
-//     function for speeding up is y = 1/(x-6) + 7/6
-//     function for slowing down is y = 0.006e^x
-//     tried to make it so for any power value, the wheels would increase velocity at a reasonable rate
-    public void adjustedStrafe(double power, int targetHeading, String direction, double inches) throws InterruptedException, ArithmeticException {
-        int ticks = (int)(inches*C*STRAFE_COEFFICIENT);
-        resetMotors();
-        for(double x = 1, currPower = 0.01; currPower <= power; x++, currPower = 1.0/(x-6) + (7.0/6)){
-            correction(currPower, targetHeading, direction, false);
-            heartbeat();
-            telemetry.addData("leftBack ticks", Math.abs(leftBack.getCurrentPosition()));
-            telemetry.addData("target", ticks);
-            telemetry.update();
-        }
-        while(motorsBusy(ticks)){
-            correction(power, targetHeading, direction, false);
-            heartbeat();
-            telemetry.addData("leftBack ticks", Math.abs(leftBack.getCurrentPosition()));
-            telemetry.addData("target", ticks);
-            telemetry.update();
-        }
-        for(double currPower = power, x = 1; currPower >= 0; x++, currPower = 0.006*Math.exp(x)){
-            correction(power, targetHeading, direction, false);
-            heartbeat();
-            telemetry.addData("leftBack ticks", Math.abs(leftBack.getCurrentPosition()));
-            telemetry.addData("target", ticks);
-            telemetry.update();
-        }
-    }
 }
 

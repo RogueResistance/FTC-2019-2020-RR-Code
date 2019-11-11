@@ -43,7 +43,7 @@ public abstract class AutoMasterClass extends LinearOpMode {
         ab.initVuforia(parameters);
     }
 
-    public void move(double targetHeading, double power, double ticks) {
+   public void move(double targetHeading, double power, double ticks) {
 
         ticks = ticks * 537 / (Math.PI * 4 * (5.0 / 6));
         int realticks = 0;
@@ -56,7 +56,7 @@ public abstract class AutoMasterClass extends LinearOpMode {
         rightBack.setPower(power);
 
         while (leftFront.isBusy() && rightFront.isBusy() && leftBack.isBusy() && rightBack.isBusy()) {
-            correction(.3,0,"stright",false);
+            correction(power,targetHeading,"stright",false);
         }
 
         halt();

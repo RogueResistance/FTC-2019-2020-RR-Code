@@ -368,6 +368,9 @@ public abstract class AutoMasterClass extends LinearOpMode {
     
 //     this still needs testing
 //     this will also cause the robot to travel too far because the distance traveled when speeding up and slowing down hasn't been accounted for
+//     function for speeding up is y = 1/(x-6) + 7/6
+//     function for slowing down is y = 0.006e^x
+//     tried to make it so for any power value, the wheels would increase velocity at a reasonable rate
     public void adjustedStrafe(double power, int targetHeading, String direction, double inches) throws InterruptedException, ArithmeticException {
         int ticks = (int)(inches*C*STRAFE_COEFFICIENT);
         resetMotors();

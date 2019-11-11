@@ -1,9 +1,13 @@
 package org.firstinspires.ftc.teamcode;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import org.firstinspires.ftc.teamcode.Autonomous.Auto;
 
+
+@Autonomous(name = "RedQuarry", group = "Autonomous")
 public class RedQuarry extends AutoMasterClass{
     private ALLIANCE_COLOR allianceColor = ALLIANCE_COLOR.RED;
 
-    @Override
+  
     public void runOpMode() {
         initialize();
         initVuforia();

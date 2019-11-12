@@ -387,7 +387,7 @@ public abstract class AutoMasterClass extends LinearOpMode {
             }
             startStrafe(power,0,direction,10);
             while (leftFront.isBusy() && rightFront.isBusy() && leftBack.isBusy() && rightBack.isBusy()) {
-                correction(power, targetHeading, direction, false);
+                correction(SpeedUpSpeed(.3,10), targetHeading, direction, false);
                 heartbeat();
                 telemetry.addData("leftBack ticks", Math.abs(leftBack.getCurrentPosition()));
                 telemetry.addData("target", ticks);
@@ -396,4 +396,31 @@ public abstract class AutoMasterClass extends LinearOpMode {
             stopStrafe(power,0,direction,10);
             halt();
         }
+    protected double SpeedUpSpeed(double power,double inches){
+       double AbsSpeed =0;
+        int ticks = (int) ((inches) * C * STRAFE_COEFFICIENT);
+        if(!rightBack.isBusy()){
+            return AbsSpeed;
+        }
+
+        double steadySpeedUpStartingSpeed = 0.1;
+        double steadySpeedUpEndingSpeed = power;
+        double steadySpeedUpStartingZone = 0.3;
+        double steadySpeedUpEndingZone = 0.7;
+
+            double ExtraSpeed = 0;
+
+            double jobPercentile = (rightFront.getCurrentPosition()/ticks);
+
+            if(jobPercentile < steadySpeedUpStartingZone){
+                ExtraSpeed = AbsSpeed - steadySpeedUpStartingSpeed;
+                AbsSpeed = steadySpeedUpStartingSpeed + (jobPercentile / steadySpeedUpStartingZone) * ExtraSpeed;
+            }else if(jobPercentile > steadySpeedUpEndingZone){
+                ExtraSpeed = AbsSpeed - steadySpeedUpEndingSpeed;
+                AbsSpeed = steadySpeedUpEndingSpeed + ((1.0 - jobPercentile) / steadySpeedUpEndingZone) * ExtraSpeed;
+            }
+        return AbsSpeed;
+        }
+
     }
+

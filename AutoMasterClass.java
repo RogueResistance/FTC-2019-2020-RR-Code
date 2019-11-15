@@ -414,13 +414,14 @@ public abstract class AutoMasterClass extends LinearOpMode {
             if(jobPercentile < steadySpeedUpStartingZone){
                 ExtraSpeed = AbsSpeed - steadySpeedUpStartingSpeed;
                 AbsSpeed = steadySpeedUpStartingSpeed + (jobPercentile / steadySpeedUpStartingZone) * ExtraSpeed;
-
+   return AbsSpeed;
             }else if(jobPercentile > steadySpeedUpEndingZone){
                 ExtraSpeed = AbsSpeed - steadySpeedUpEndingSpeed;
                 AbsSpeed = steadySpeedUpEndingSpeed + ((1.0 - jobPercentile) / steadySpeedUpEndingZone) * ExtraSpeed;
-
+                      return AbsSpeed;
             }
-        return AbsSpeed;
+           return AbsSpeed;
+     
         }
 
     }
